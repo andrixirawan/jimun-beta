@@ -9,7 +9,11 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Generated native directories by npx expo prebuild
+/android
+/ios
+
+# Native signing & sensitive files
 .kotlin/
 *.orig.*
 *.jks
@@ -31,6 +35,7 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
