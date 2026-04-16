@@ -2,10 +2,8 @@ import { isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Stack } from 'expo-router';
 import { useThemeColor, useToast } from 'heroui-native';
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Platform, StyleSheet, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
-import LogoDark from '../../../assets/logo-dark.png';
-import LogoLight from '../../../assets/logo-light.png';
 import { type UpdateBottomSheetMode } from '../../components/bottom-sheet/update-bottom-sheet';
 import { ThemeToggle } from '../../components/theme-toggle';
 import { useAppTheme } from '../../contexts/app-theme-context';
@@ -67,16 +65,6 @@ export default function Layout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reducedMotion]);
 
-  const _renderTitle = () => {
-    return (
-      <Image
-        source={isDark ? LogoLight : LogoDark}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-    );
-  };
-
   const _renderThemeToggle = useCallback(() => <ThemeToggle />, []);
 
   return (
@@ -106,12 +94,6 @@ export default function Layout() {
           },
         }}
       >
-        <Stack.Screen
-          name="index"
-          options={{
-            headerTitle: _renderTitle,
-          }}
-        />
         <Stack.Screen
           name="components/index"
           options={{ headerTitle: 'Components' }}
@@ -167,10 +149,3 @@ export default function Layout() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  logo: {
-    width: 80,
-    height: 24,
-  },
-});
