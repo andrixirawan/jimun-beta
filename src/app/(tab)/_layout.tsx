@@ -13,6 +13,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      backBehavior="none"
       screenOptions={{
         headerTitleAlign: 'center',
         headerTransparent: true,

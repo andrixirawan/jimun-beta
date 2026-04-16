@@ -27,7 +27,7 @@ import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useCallback } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   KeyboardAvoidingView,
@@ -75,7 +75,9 @@ function AppContent() {
           },
         }}
       >
-        <Slot />
+        <View className="flex-1 bg-background">
+          <Slot />
+        </View>
       </HeroUINativeProvider>
     </AppThemeProvider>
   );
