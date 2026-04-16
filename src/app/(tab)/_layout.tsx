@@ -1,23 +1,23 @@
-import Feather from '@expo/vector-icons/Feather';
-import { Tabs } from 'expo-router';
-import { useThemeColor } from 'heroui-native';
-import { useCallback } from 'react';
-import { Platform } from 'react-native';
-import { ThemeToggle } from '../../components/theme-toggle';
-import { useAppTheme } from '../../contexts/app-theme-context';
+import Feather from "@expo/vector-icons/Feather";
+import { Tabs } from "expo-router";
+import { useThemeColor } from "heroui-native";
+import { useCallback } from "react";
+import { Platform } from "react-native";
+import { ThemeToggle } from "../../components/theme-toggle";
+import { useAppTheme } from "../../contexts/app-theme-context";
 
 export default function TabLayout() {
   const { isDark } = useAppTheme();
-  const themeColorForeground = useThemeColor('foreground');
-  const themeColorBackground = useThemeColor('background');
-  const themeColorMuted = useThemeColor('muted');
+  const themeColorForeground = useThemeColor("foreground");
+  const themeColorBackground = useThemeColor("background");
+  const themeColorMuted = useThemeColor("muted");
   const renderThemeToggle = useCallback(() => <ThemeToggle />, []);
 
   return (
     <Tabs
       backBehavior="none"
       screenOptions={{
-        headerTitleAlign: 'center',
+        headerTitleAlign: "center",
         headerTransparent: true,
         headerTintColor: themeColorForeground,
         headerStyle: {
@@ -27,7 +27,7 @@ export default function TabLayout() {
           }),
         },
         headerTitleStyle: {
-          fontFamily: 'Inter_600SemiBold',
+          fontFamily: "Inter_600SemiBold",
         },
         headerRight: renderThemeToggle,
         tabBarActiveTintColor: themeColorForeground,
@@ -35,8 +35,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: themeColorBackground,
           borderTopColor: isDark
-            ? 'rgba(255,255,255,0.12)'
-            : 'rgba(0,0,0,0.08)',
+            ? "rgba(255,255,255,0.12)"
+            : "rgba(0,0,0,0.08)",
         },
         sceneStyle: {
           backgroundColor: themeColorBackground,
@@ -46,7 +46,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Feather name="home" size={size} color={color} />
           ),
@@ -55,7 +55,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="demo"
         options={{
-          title: 'Demo',
+          title: "Demo",
           tabBarIcon: ({ color, size }) => (
             <Feather name="grid" size={size} color={color} />
           ),
@@ -64,7 +64,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings/index"
         options={{
-          title: 'Settings',
+          title: "Settings",
           tabBarIcon: ({ color, size }) => (
             <Feather name="settings" size={size} color={color} />
           ),
@@ -73,7 +73,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="auth"
         options={{
-          title: 'Auth',
+          title: "Auth",
           tabBarIcon: ({ color, size }) => (
             <Feather name="shield" size={size} color={color} />
           ),

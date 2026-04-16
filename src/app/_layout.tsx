@@ -25,9 +25,10 @@ import {
 } from '@expo-google-fonts/space-grotesk';
 import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as NavigationBar from 'expo-navigation-bar';
 import { HeroUINativeProvider } from 'heroui-native';
-import { useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useCallback, useEffect } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   KeyboardAvoidingView,
@@ -82,7 +83,21 @@ function AppContent() {
 }
 
 function AppShell() {
-  const { isHydrated } = useAppTheme();
+  const { isHydrated, isDark } = useAppTheme();
+
+  useEffect(() => {
+    if (!isHydrated || Platform.OS !== 'android') return;
+
+    const syncAndroidNavigationBarStyle = async () => {
+      try {
+        NavigationBar.setStyle(isDark ? 'dark' : 'light');
+      } catch {
+        // Navigation bar style may be unavailable on some Android configurations.
+      }
+    };
+
+    syncAndroidNavigationBarStyle();
+  }, [isDark, isHydrated]);
 
   if (!isHydrated) {
     return <View className="flex-1 bg-background" />;
