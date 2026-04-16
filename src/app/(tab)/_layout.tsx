@@ -1,6 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Tabs } from 'expo-router';
 import { useThemeColor } from 'heroui-native';
+import { useCallback } from 'react';
 import { Platform } from 'react-native';
 import { ThemeToggle } from '../../components/theme-toggle';
 import { useAppTheme } from '../../contexts/app-theme-context';
@@ -10,6 +11,7 @@ export default function TabLayout() {
   const themeColorForeground = useThemeColor('foreground');
   const themeColorBackground = useThemeColor('background');
   const themeColorMuted = useThemeColor('muted');
+  const renderThemeToggle = useCallback(() => <ThemeToggle />, []);
 
   return (
     <Tabs
@@ -27,7 +29,7 @@ export default function TabLayout() {
         headerTitleStyle: {
           fontFamily: 'Inter_600SemiBold',
         },
-        headerRight: () => <ThemeToggle />,
+        headerRight: renderThemeToggle,
         tabBarActiveTintColor: themeColorForeground,
         tabBarInactiveTintColor: themeColorMuted,
         tabBarStyle: {

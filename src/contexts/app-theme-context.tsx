@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Uniwind, useUniwind } from 'uniwind';
 
 type ThemeName =
@@ -15,6 +23,7 @@ interface AppThemeContextType {
   currentTheme: string;
   isLight: boolean;
   isDark: boolean;
+  isHydrated: boolean;
   setTheme: (theme: ThemeName) => void;
   toggleTheme: () => void;
 }
@@ -23,10 +32,64 @@ const AppThemeContext = createContext<AppThemeContextType | undefined>(
   undefined
 );
 
+const THEME_STORAGE_KEY = 'app-theme';
+
+const AVAILABLE_THEMES: ThemeName[] = [
+  'light',
+  'dark',
+  'lavender-light',
+  'lavender-dark',
+  'mint-light',
+  'mint-dark',
+  'sky-light',
+  'sky-dark',
+];
+
+const isThemeName = (theme: string | null): theme is ThemeName => {
+  if (!theme) return false;
+  return AVAILABLE_THEMES.includes(theme as ThemeName);
+};
+
 export const AppThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { theme } = useUniwind();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const hydrateTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        if (!isMounted) return;
+
+        if (isThemeName(savedTheme)) {
+          Uniwind.setTheme(savedTheme);
+          setIsHydrated(true);
+          return;
+        }
+
+        Uniwind.setTheme('light');
+        setIsHydrated(true);
+      } catch {
+        if (!isMounted) return;
+        Uniwind.setTheme('light');
+        setIsHydrated(true);
+      }
+    };
+
+    hydrateTheme();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    AsyncStorage.setItem(THEME_STORAGE_KEY, theme).catch(() => undefined);
+  }, [isHydrated, theme]);
 
   const isLight = useMemo(() => {
     return theme === 'light' || theme.endsWith('-light');
@@ -74,10 +137,11 @@ export const AppThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       currentTheme: theme,
       isLight,
       isDark,
+      isHydrated,
       setTheme,
       toggleTheme,
     }),
-    [theme, isLight, isDark, setTheme, toggleTheme]
+    [theme, isLight, isDark, isHydrated, setTheme, toggleTheme]
   );
 
   return (

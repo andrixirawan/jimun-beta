@@ -4,7 +4,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { isLiquidGlassAvailable } from 'expo-glass-effect';
 import * as Haptics from 'expo-haptics';
 import { cn } from 'heroui-native';
-import { type FC } from 'react';
+import { memo, type FC } from 'react';
 import { Platform, TouchableOpacity } from 'react-native';
 import Animated, { FadeOut, ZoomIn } from 'react-native-reanimated';
 import { withUniwind } from 'uniwind';
@@ -13,7 +13,7 @@ import { useAppTheme } from '../contexts/app-theme-context';
 const StyledIonicons = withUniwind(Ionicons);
 const StyledAntDesign = withUniwind(AntDesign);
 
-export const ThemeToggle: FC = () => {
+const ThemeToggleComponent: FC = () => {
   const { toggleTheme, isLight } = useAppTheme();
 
   const isLGAvailable = isLiquidGlassAvailable();
@@ -44,3 +44,5 @@ export const ThemeToggle: FC = () => {
     </TouchableOpacity>
   );
 };
+
+export const ThemeToggle = memo(ThemeToggleComponent);

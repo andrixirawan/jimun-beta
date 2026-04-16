@@ -34,7 +34,7 @@ import {
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
 import '../../global.css';
-import { AppThemeProvider } from '../contexts/app-theme-context';
+import { AppThemeProvider, useAppTheme } from '../contexts/app-theme-context';
 
 SplashScreen.setOptions({
   duration: 300,
@@ -75,11 +75,23 @@ function AppContent() {
           },
         }}
       >
-        <View className="flex-1 bg-background">
-          <Slot />
-        </View>
+        <AppShell />
       </HeroUINativeProvider>
     </AppThemeProvider>
+  );
+}
+
+function AppShell() {
+  const { isHydrated } = useAppTheme();
+
+  if (!isHydrated) {
+    return <View className="flex-1 bg-background" />;
+  }
+
+  return (
+    <View className="flex-1 bg-background">
+      <Slot />
+    </View>
   );
 }
 
