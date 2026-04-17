@@ -20,7 +20,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { withUniwind } from 'uniwind';
-import BgImage from '../../../../assets/images/pancakes.jpg';
+import BgImage from '../../../../../assets/images/pancakes.jpg';
 import { AppText } from '../../../../components/app-text';
 import { Ask } from '../../../../components/showcases/cooking-onboarding/ask';
 import { Author } from '../../../../components/showcases/cooking-onboarding/author';

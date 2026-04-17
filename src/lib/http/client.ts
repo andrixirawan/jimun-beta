@@ -21,5 +21,6 @@ export const httpClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'X-Client-Type': getClientType(),
+    'Origin': getPublicApiBaseUrl(),
   },
 });
