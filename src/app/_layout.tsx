@@ -148,6 +148,12 @@ export default function Layout() {
     SNPro_700Bold,
   });
 
+  useEffect(() => {
+    if (fonts) {
+      SplashScreen.hideAsync();
+    }
+  }, [fonts]);
+
   if (!fonts) {
     return null;
   }
