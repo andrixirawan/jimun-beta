@@ -135,7 +135,7 @@ export const signOutCurrentSession = async () => {
   }
 
   try {
-    await httpClient.post('/api/auth/sign-out', undefined, {
+    await httpClient.post('/api/auth/sign-out', {}, {
       headers: getBearerHeaders(token),
     });
   } catch (error) {
