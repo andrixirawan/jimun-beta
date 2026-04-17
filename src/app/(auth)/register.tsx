@@ -1,39 +1,169 @@
-import Feather from '@expo/vector-icons/Feather';
-import { Link } from 'expo-router';
-import { useThemeColor } from 'heroui-native';
+import { type Href, Link, useRouter } from 'expo-router';
+import {
+  Button,
+  Description,
+  FieldError,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+  useThemeColor,
+} from 'heroui-native';
+import { startTransition, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { AuthScreenShell } from '../../components/auth/auth-screen-shell';
 import { AppText } from '../../components/app-text';
-import { ScreenScrollView } from '../../components/screen-scroll-view';
+import type { SignUpInput } from '../../lib/auth/auth.schemas';
+import { signUpInputSchema } from '../../lib/auth/auth.schemas';
+import { useAuthStore } from '../../lib/auth/auth.store';
+import { getFirstFieldErrors } from '../../lib/validation/zod';
+
+type SignUpField = keyof SignUpInput;
 
 export default function RegisterScreen() {
-  const themeColorForeground = useThemeColor('foreground');
+  const router = useRouter();
+  const signUp = useAuthStore((state) => state.signUp);
+  const themeColorAccentForeground = useThemeColor('accent-foreground');
+
+  const [formValues, setFormValues] = useState<SignUpInput>({
+    email: '',
+    name: '',
+    password: '',
+  });
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<SignUpField, string>>
+  >({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const updateField = (field: SignUpField, value: string) => {
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      [field]: value,
+    }));
+    setFieldErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: undefined,
+    }));
+    setFormError(null);
+  };
+
+  const handleSubmit = async () => {
+    const parsedValues = signUpInputSchema.safeParse(formValues);
+
+    if (!parsedValues.success) {
+      setFieldErrors(getFirstFieldErrors<SignUpField>(parsedValues.error));
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      await signUp(parsedValues.data);
+      startTransition(() => {
+        router.replace('/loading' as Href);
+      });
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to create your account.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <ScreenScrollView contentContainerClassName="flex-1 justify-center items-center">
-      <View className="w-full items-center px-6 gap-3">
-        <AppText className="text-2xl font-semibold text-foreground">
-          Register
-        </AppText>
-        <AppText className="text-sm text-muted text-center mt-2">
-          Blank UI placeholder untuk halaman register.
-        </AppText>
-
-        <View className="w-full gap-3 mt-3">
-          <Link href="/(tab)" asChild>
-            <Pressable className="flex-row items-center justify-center gap-2 rounded-xl bg-foreground py-3">
-              <Feather name="home" size={16} color="#ffffff" />
-              <AppText className="text-background font-semibold">Home</AppText>
-            </Pressable>
-          </Link>
-
-          <Link href="/(auth)/sign-in" asChild>
-            <Pressable className="flex-row items-center justify-center gap-2 rounded-xl border border-border py-3">
-              <Feather name="log-in" size={16} color={themeColorForeground} />
-              <AppText className="text-foreground font-semibold">Login</AppText>
+    <AuthScreenShell
+      badge="New account"
+      title="Create your account"
+      description="Register with the backend contract in docs/auth, then we will open the protected area after a short loading step."
+      footer={
+        <View className="flex-row items-center gap-1">
+          <AppText className="text-sm text-muted">Already registered?</AppText>
+          <Link href="/sign-in" asChild>
+            <Pressable hitSlop={8}>
+              <AppText className="text-sm font-semibold text-foreground">
+                Sign in instead
+              </AppText>
             </Pressable>
           </Link>
         </View>
+      }
+    >
+      <View className="gap-4">
+        <TextField isInvalid={Boolean(fieldErrors.name)}>
+          <Label>Full name</Label>
+          <Input
+            autoCapitalize="words"
+            autoComplete="name"
+            onChangeText={(value) => updateField('name', value)}
+            placeholder="Jane Doe"
+            returnKeyType="next"
+            textContentType="name"
+            value={formValues.name}
+          />
+          {!fieldErrors.name ? (
+            <Description>This value is sent as the Better Auth display name.</Description>
+          ) : null}
+          {fieldErrors.name ? <FieldError>{fieldErrors.name}</FieldError> : null}
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.email)}>
+          <Label>Email</Label>
+          <Input
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            keyboardType="email-address"
+            onChangeText={(value) => updateField('email', value)}
+            placeholder="jane@example.com"
+            returnKeyType="next"
+            textContentType="emailAddress"
+            value={formValues.email}
+          />
+          {fieldErrors.email ? <FieldError>{fieldErrors.email}</FieldError> : null}
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.password)}>
+          <Label>Password</Label>
+          <Input
+            autoCapitalize="none"
+            autoComplete="new-password"
+            autoCorrect={false}
+            onChangeText={(value) => updateField('password', value)}
+            onSubmitEditing={handleSubmit}
+            placeholder="Create a strong password"
+            returnKeyType="done"
+            secureTextEntry
+            textContentType="newPassword"
+            value={formValues.password}
+          />
+          {!fieldErrors.password ? (
+            <Description>We store only the session token on-device, inside SecureStore.</Description>
+          ) : null}
+          {fieldErrors.password ? (
+            <FieldError>{fieldErrors.password}</FieldError>
+          ) : null}
+        </TextField>
       </View>
-    </ScreenScrollView>
+
+      {formError ? (
+        <View className="rounded-2xl border border-danger/20 bg-danger/10 px-4 py-3">
+          <AppText className="text-sm font-medium text-danger">{formError}</AppText>
+        </View>
+      ) : null}
+
+      <Button onPress={handleSubmit} isDisabled={isSubmitting}>
+        {isSubmitting ? (
+          <Spinner color={themeColorAccentForeground} size="sm" />
+        ) : null}
+        <Button.Label>
+          {isSubmitting ? 'Creating account' : 'Create account'}
+        </Button.Label>
+      </Button>
+    </AuthScreenShell>
   );
 }

@@ -1,1 +1,1 @@
-export { default } from '../(demo)/index';
+export { default } from '../(protected)/demo/index';

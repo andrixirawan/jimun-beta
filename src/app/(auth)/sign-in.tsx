@@ -1,41 +1,150 @@
-import Feather from '@expo/vector-icons/Feather';
-import { Link } from 'expo-router';
-import { useThemeColor } from 'heroui-native';
+import { type Href, Link, useRouter } from 'expo-router';
+import {
+  Button,
+  Description,
+  FieldError,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+  useThemeColor,
+} from 'heroui-native';
+import { startTransition, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { AuthScreenShell } from '../../components/auth/auth-screen-shell';
 import { AppText } from '../../components/app-text';
-import { ScreenScrollView } from '../../components/screen-scroll-view';
+import type { SignInInput } from '../../lib/auth/auth.schemas';
+import { signInInputSchema } from '../../lib/auth/auth.schemas';
+import { useAuthStore } from '../../lib/auth/auth.store';
+import { getFirstFieldErrors } from '../../lib/validation/zod';
+
+type SignInField = keyof SignInInput;
 
 export default function SignInScreen() {
-  const themeColorForeground = useThemeColor('foreground');
+  const router = useRouter();
+  const signIn = useAuthStore((state) => state.signIn);
+  const themeColorAccentForeground = useThemeColor('accent-foreground');
+
+  const [formValues, setFormValues] = useState<SignInInput>({
+    email: '',
+    password: '',
+  });
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<SignInField, string>>
+  >({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const updateField = (field: SignInField, value: string) => {
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      [field]: value,
+    }));
+    setFieldErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: undefined,
+    }));
+    setFormError(null);
+  };
+
+  const handleSubmit = async () => {
+    const parsedValues = signInInputSchema.safeParse(formValues);
+
+    if (!parsedValues.success) {
+      setFieldErrors(getFirstFieldErrors<SignInField>(parsedValues.error));
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      await signIn(parsedValues.data);
+      startTransition(() => {
+        router.replace('/loading' as Href);
+      });
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : 'Unable to sign in.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <ScreenScrollView contentContainerClassName="flex-1 justify-center items-center">
-      <View className="w-full items-center px-6 gap-3">
-        <AppText className="text-2xl font-semibold text-foreground">
-          Sign In
-        </AppText>
-        <AppText className="text-sm text-muted text-center mt-2">
-          Blank UI placeholder untuk halaman sign in.
-        </AppText>
-
-        <View className="w-full gap-3 mt-3">
-          <Link href="/(tab)" asChild>
-            <Pressable className="flex-row items-center justify-center gap-2 rounded-xl bg-foreground py-3">
-              <Feather name="home" size={16} color="#ffffff" />
-              <AppText className="text-background font-semibold">Home</AppText>
-            </Pressable>
-          </Link>
-
-          <Link href="/(auth)/register" asChild>
-            <Pressable className="flex-row items-center justify-center gap-2 rounded-xl border border-border py-3">
-              <Feather name="user-plus" size={16} color={themeColorForeground} />
-              <AppText className="text-foreground font-semibold">
-                Register
+    <AuthScreenShell
+      badge="Auth flow"
+      title="Welcome back"
+      description="Sign in with your email and password to restore your secure session."
+      footer={
+        <View className="flex-row items-center gap-1">
+          <AppText className="text-sm text-muted">New here?</AppText>
+          <Link href="/register" asChild>
+            <Pressable hitSlop={8}>
+              <AppText className="text-sm font-semibold text-foreground">
+                Create an account
               </AppText>
             </Pressable>
           </Link>
         </View>
+      }
+    >
+      <View className="gap-4">
+        <TextField isInvalid={Boolean(fieldErrors.email)}>
+          <Label>Email</Label>
+          <Input
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            keyboardType="email-address"
+            onChangeText={(value) => updateField('email', value)}
+            placeholder="jane@example.com"
+            returnKeyType="next"
+            textContentType="emailAddress"
+            value={formValues.email}
+          />
+          {!fieldErrors.email ? (
+            <Description>Use the same email that exists on your backend.</Description>
+          ) : null}
+          {fieldErrors.email ? <FieldError>{fieldErrors.email}</FieldError> : null}
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.password)}>
+          <Label>Password</Label>
+          <Input
+            autoCapitalize="none"
+            autoComplete="password"
+            autoCorrect={false}
+            onChangeText={(value) => updateField('password', value)}
+            onSubmitEditing={handleSubmit}
+            placeholder="Enter your password"
+            returnKeyType="go"
+            secureTextEntry
+            textContentType="password"
+            value={formValues.password}
+          />
+          {!fieldErrors.password ? (
+            <Description>Passwords must contain at least 8 characters.</Description>
+          ) : null}
+          {fieldErrors.password ? (
+            <FieldError>{fieldErrors.password}</FieldError>
+          ) : null}
+        </TextField>
       </View>
-    </ScreenScrollView>
+
+      {formError ? (
+        <View className="rounded-2xl border border-danger/20 bg-danger/10 px-4 py-3">
+          <AppText className="text-sm font-medium text-danger">{formError}</AppText>
+        </View>
+      ) : null}
+
+      <Button onPress={handleSubmit} isDisabled={isSubmitting}>
+        {isSubmitting ? (
+          <Spinner color={themeColorAccentForeground} size="sm" />
+        ) : null}
+        <Button.Label>{isSubmitting ? 'Signing in' : 'Sign In'}</Button.Label>
+      </Button>
+    </AuthScreenShell>
   );
 }

@@ -18,8 +18,11 @@ export const SelectItem: FC<Props> = ({ data }) => {
   const { isDark } = useAppTheme();
 
   const { value: selectedValue } = useSelect();
+  const selectedOption = Array.isArray(selectedValue)
+    ? selectedValue[0]
+    : selectedValue;
 
-  const isSelected = selectedValue?.value === data.value;
+  const isSelected = selectedOption?.value === data.value;
   const isSelectedAndroid = isSelected && Platform.OS === 'android';
 
   return (

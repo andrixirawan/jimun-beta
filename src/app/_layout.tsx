@@ -27,7 +27,7 @@ import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as NavigationBar from 'expo-navigation-bar';
 import { HeroUINativeProvider } from 'heroui-native';
-import { useCallback, useEffect } from 'react';
+import { type ReactNode, useCallback, useEffect } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -35,7 +35,11 @@ import {
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
 import '../../global.css';
+import { AuthLoadingScreen } from '../components/auth/auth-loading-screen';
 import { AppThemeProvider, useAppTheme } from '../contexts/app-theme-context';
+import { AuthNavigationSync } from '../lib/auth/auth-navigation-sync';
+import { AuthProvider } from '../lib/auth/auth-provider';
+import { useAuthStore } from '../lib/auth/auth.store';
 
 SplashScreen.setOptions({
   duration: 300,
@@ -48,7 +52,7 @@ SplashScreen.setOptions({
  */
 function AppContent() {
   const contentWrapper = useCallback(
-    (children: React.ReactNode) => (
+    (children: ReactNode) => (
       <KeyboardAvoidingView
         pointerEvents="box-none"
         behavior="padding"
@@ -63,27 +67,30 @@ function AppContent() {
 
   return (
     <AppThemeProvider>
-      <HeroUINativeProvider
-        config={{
-          textProps: {
-            maxFontSizeMultiplier: 2,
-          },
-          toast: {
-            contentWrapper,
-          },
-          devInfo: {
-            stylingPrinciples: false,
-          },
-        }}
-      >
-        <AppShell />
-      </HeroUINativeProvider>
+      <AuthProvider>
+        <HeroUINativeProvider
+          config={{
+            textProps: {
+              maxFontSizeMultiplier: 2,
+            },
+            toast: {
+              contentWrapper,
+            },
+            devInfo: {
+              stylingPrinciples: false,
+            },
+          }}
+        >
+          <AppShell />
+        </HeroUINativeProvider>
+      </AuthProvider>
     </AppThemeProvider>
   );
 }
 
 function AppShell() {
   const { isHydrated, isDark } = useAppTheme();
+  const isAuthReady = useAuthStore((state) => state.isReady);
 
   useEffect(() => {
     if (!isHydrated || Platform.OS !== 'android') return;
@@ -103,8 +110,19 @@ function AppShell() {
     return <View className="flex-1 bg-background" />;
   }
 
+  if (!isAuthReady) {
+    return (
+      <AuthLoadingScreen
+        badge="Secure bootstrap"
+        title="Checking your session"
+        description="We are restoring your secure session before opening the app."
+      />
+    );
+  }
+
   return (
     <View className="flex-1 bg-background">
+      <AuthNavigationSync />
       <Slot />
     </View>
   );

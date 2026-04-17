@@ -73,9 +73,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="auth"
         options={{
-          title: "Auth",
+          title: "Account",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="shield" size={size} color={color} />
+            <Feather name="user" size={size} color={color} />
           ),
         }}
       />
