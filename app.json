@@ -54,6 +54,16 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "expo-navigation-bar": {
+        "enforceContrast": false
+      },
+      "eas": {
+        "projectId": "eb7d8cae-21f1-4ca7-bad9-d3ca56a44515"
+      }
+    },
+    "owner": "shendrongddv"
   }
 }
