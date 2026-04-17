@@ -48,5 +48,3 @@ yarn-error.*
 app-example-src
 .git/
 .vscode/
-.npmrc
-android/
